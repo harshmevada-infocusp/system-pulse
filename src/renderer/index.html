@@ -2,12 +2,41 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>renderer</title>
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'"
+    />
+    <title>System Pulse</title>
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <div id="app">
+      <h1>⚡ System Pulse</h1>
+      <div id="stats-grid">
+        <div class="stat-card" id="cpu-card">
+          <span class="label">CPU Usage</span>
+          <span class="value" id="cpu-value">--</span>
+        </div>
+        <div class="stat-card" id="mem-card">
+          <span class="label">Memory Used</span>
+          <span class="value" id="mem-value">--</span>
+        </div>
+        <div class="stat-card" id="uptime-card">
+          <span class="label">Uptime</span>
+          <span class="value" id="uptime-value">--</span>
+        </div>
+      </div>
+      <div id="log-viewer">
+        <h3>📋 Live Logs</h3>
+        <div id="log-entries"></div>
+      </div>
+      <footer>
+        <label>
+          <input type="checkbox" id="telemetry-toggle" checked />
+          Send anonymous telemetry
+        </label>
+      </footer>
+    </div>
+    <script src="renderer.js"></script>
   </body>
 </html>
