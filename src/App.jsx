@@ -19,7 +19,6 @@ export default function App() {
   }, []);
   return (
     <div style={{ padding: 20 }}>
-      <h1>Hello from React + Electron ⚡</h1>
       <div style={{ padding: 30, fontFamily: "sans-serif" }}>
         <h1>System Monitor</h1>
 

@@ -8,13 +8,16 @@ import {
   initTracing,
   shutdownTracing,
 } from "./telemetry/tracing";
+import { getRecentMetrics, initDB, insertMetrics } from "./db/db";
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
   app.quit();
 }
 let mainWindow;
-const tracing = initTracing();
+initTracing();
 const { cpuGuage, ramGauge } = createMetrics();
+
+const db = initDB();
 const createWindow = () => {
   // Create the browser window.
   mainWindow = new BrowserWindow({
@@ -80,6 +83,8 @@ setInterval(() => {
   // console.log("System Stats:", systemStats);
 
   mainWindow.webContents.send("system-stats", systemStats);
+
+  insertMetrics({ db, ...systemStats });
   // logger.info("System stats updated", { ...systemStats, service: "resource" });
 }, 1000);
 
@@ -87,6 +92,8 @@ setInterval(() => {
   if (!mainWindow) return;
 
   const recentLogs = getRecentLogs();
+  const systemLogs = getRecentMetrics({ db });
+  console.log("systemLogs", systemLogs);
   mainWindow.webContents.send("system-logs", recentLogs);
 }, 3000);
 
