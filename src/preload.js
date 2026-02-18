@@ -8,6 +8,11 @@ contextBridge.exposeInMainWorld("api", {
       callback(data);
     });
   },
+  onSystemLogs: (callback) => {
+    ipcRenderer.on("system-logs", (_event, data) => {
+      callback(data);
+    });
+  },
   log: (level, message) => {
     ipcRenderer.send("log-message", { level, message });
   },

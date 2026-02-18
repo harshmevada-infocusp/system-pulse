@@ -1,8 +1,10 @@
+import moment from "moment";
 import { useEffect, useState } from "react";
 
 export default function App() {
   const [cpu, setCpu] = useState(0);
   const [ram, setRam] = useState(0);
+  const [logs, setLogs] = useState([]);
 
   useEffect(() => {
     window.api.onSystemStats((data) => {
@@ -10,6 +12,10 @@ export default function App() {
       setRam(data.ram);
     });
     window.api.log("info", "System monitor mounted");
+
+    window.api.onSystemLogs((data) => {
+      setLogs(data);
+    });
   }, []);
   return (
     <div style={{ padding: 20 }}>
@@ -26,6 +32,17 @@ export default function App() {
           <h2>RAM Usage: {ram}%</h2>
           <progress value={ram} max="100" style={{ width: 300 }} />
         </div>
+      </div>
+      <div>
+        <h2>Recent Logs</h2>
+        <ul>
+          {logs.map((log, index) => (
+            <li key={index}>
+              {log.level}: {log.message}{" "}
+              {moment(log.timestamp).format("DD-MM-YYYY HH:mm:ss")}
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   );

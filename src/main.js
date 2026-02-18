@@ -2,12 +2,19 @@ import { app, BrowserWindow, ipcMain, ipcRenderer } from "electron";
 import path from "node:path";
 import started from "electron-squirrel-startup";
 import { getSystemStats } from "../utils/system-utils";
-import logger from "./logger/logger";
+import logger, { getRecentLogs } from "./logger/logger";
+import {
+  createMetrics,
+  initTracing,
+  shutdownTracing,
+} from "./telemetry/tracing";
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
   app.quit();
 }
 let mainWindow;
+const tracing = initTracing();
+const { cpuGuage, ramGauge } = createMetrics();
 const createWindow = () => {
   // Create the browser window.
   mainWindow = new BrowserWindow({
@@ -61,18 +68,41 @@ process.on("uncaughtException", (error) => {
 process.on("unhandledRejection", (reason) => {
   logger.error("Unhandled Rejection", reason);
 });
+app.on("before-quit", () => {
+  logger.info("Application is quitting...");
+  shutdownTracing();
+});
 setInterval(() => {
   if (!mainWindow) return;
 
   const systemStats = getSystemStats();
 
-  console.log("System Stats:", systemStats);
+  // console.log("System Stats:", systemStats);
 
   mainWindow.webContents.send("system-stats", systemStats);
+  // logger.info("System stats updated", { ...systemStats, service: "resource" });
 }, 1000);
+
+setInterval(() => {
+  if (!mainWindow) return;
+
+  const recentLogs = getRecentLogs();
+  mainWindow.webContents.send("system-logs", recentLogs);
+}, 3000);
 
 ipcMain.on("log-message", (_event, { level, message }) => {
   logger.log(level, message);
+});
+
+cpuGuage.addCallback((observableResult) => {
+  const systemStats = getSystemStats();
+  observableResult.observe(systemStats.cpu);
+});
+
+ramGauge.addCallback((observableResult) => {
+  const systemStats = getSystemStats();
+
+  observableResult.observe(systemStats.ram);
 });
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.
